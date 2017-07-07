@@ -28,7 +28,6 @@ namespace Minesweeper
                 if (!Int64.TryParse(input, out numBombs) || numBombs < 1 || numBombs > n * n)
                     Console.WriteLine($"Number of bombs must be between 1 and {n * n}!");
             }
-
             return numBombs;
         }
 
@@ -45,6 +44,7 @@ namespace Minesweeper
             }
             return n;
         }
+        
         public Board(int SizeOfBoard, Int64 NumBombsToHide)
         {
             _toCheck = new Queue<Tuple<int, int>>();
@@ -72,6 +72,7 @@ namespace Minesweeper
                 }
             }
         }
+        
         public void Play()
         {
             DrawBoard();
@@ -125,6 +126,7 @@ namespace Minesweeper
                 }
             }
         }
+        
         private void AddBomb(int x, int y)
         {
             _board[x][y].HasBomb = true;
@@ -137,11 +139,13 @@ namespace Minesweeper
             UpdateCount(x, y + 1);
             UpdateCount(x + 1, y + 1);
         }
+        
         private void UpdateCount(int x, int y)
         {
             if (x >= 0 && x < _sizeOfBoard && y >= 0 && y < _sizeOfBoard)
                 _board[x][y].Count++;
         }
+        
         private void DrawBoard()
         {
                Console.Clear();
@@ -187,6 +191,7 @@ namespace Minesweeper
             Console.WriteLine("-");
             Console.ForegroundColor = origColor;
         }
+        
         private void Flag(int x, int y)
         {
             x--;
@@ -213,6 +218,7 @@ namespace Minesweeper
                 }
             }
         }
+        
         private void Show(int x, int y)
         {
             x--;
@@ -239,6 +245,7 @@ namespace Minesweeper
                 }
             }
         }
+        
         private void ShowEmptyCells(int x, int y)
         {
             if (x >= 0 && x < _sizeOfBoard && y >= 0 && y < _sizeOfBoard)
@@ -261,6 +268,7 @@ namespace Minesweeper
                 }
             }
         }
+        
         private bool _hasWon
         {
             get
