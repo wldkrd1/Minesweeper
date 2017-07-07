@@ -266,7 +266,6 @@ namespace Minesweeper
                     if (_board[x][y].Count == 0)
                     {
                         _cellsToClear.Enqueue(new Tuple<int, int>(x - 1, y - 1));
-                        _cellsToClear.Enqueue(new Tuple<int, int>(x - 1, y - 1));
                         _cellsToClear.Enqueue(new Tuple<int, int>(x, y - 1));
                         _cellsToClear.Enqueue(new Tuple<int, int>(x + 1, y - 1));
                         _cellsToClear.Enqueue(new Tuple<int, int>(x - 1, y));
