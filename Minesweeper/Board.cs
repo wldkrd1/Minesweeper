@@ -145,16 +145,16 @@ namespace Minesweeper
         private void AddBomb(int x, int y)
         {
             _board[x][y].HasBomb = true;
-            UpdateCount(x - 1, y - 1);
-            UpdateCount(x, y - 1);
-            UpdateCount(x + 1, y - 1);
-            UpdateCount(x - 1, y);
-            UpdateCount(x + 1, y);
-            UpdateCount(x - 1, y + 1);
-            UpdateCount(x, y + 1);
-            UpdateCount(x + 1, y + 1);
+            UpdateBombCount(x - 1, y - 1);
+            UpdateBombCount(x, y - 1);
+            UpdateBombCount(x + 1, y - 1);
+            UpdateBombCount(x - 1, y);
+            UpdateBombCount(x + 1, y);
+            UpdateBombCount(x - 1, y + 1);
+            UpdateBombCount(x, y + 1);
+            UpdateBombCount(x + 1, y + 1);
         }
-        private void UpdateCount(int x, int y)
+        private void UpdateBombCount(int x, int y)
         {
             if (x >= 0 && x < _sizeOfBoard && y >= 0 && y < _sizeOfBoard)
                 _board[x][y].Count++;
