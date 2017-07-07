@@ -11,6 +11,8 @@ namespace Minesweeper
         Cell[][] _board;
         int _sizeOfBoard;
         int _numFlagged;
+        long _numHidden;
+
         Queue<Tuple<int, int>> _cellsToClear;
         Random _random;
 
@@ -48,7 +50,7 @@ namespace Minesweeper
             return n;
         }
 
-        public Board(int SizeOfBoard, int NumBombsToHide)
+        public  Board(int SizeOfBoard, int NumBombsToHide)
         {
             if (SizeOfBoard < 1 || SizeOfBoard > 99)
                 throw new ArgumentOutOfRangeException("SizeOfBoard", "Must be between 1 and 99");
@@ -89,6 +91,7 @@ namespace Minesweeper
                     _board[i][j] = new Cell();
                 }
             }
+            _numHidden = SizeOfBoard * SizeOfBoard;
         }
 
         public void Play()
@@ -220,6 +223,7 @@ namespace Minesweeper
                     case DisplayState.Flagged:
                         if (_numFlagged > 0)
                         {
+                            _numHidden++;
                             _numFlagged--;
                             _board[x][y].State = DisplayState.Hidden;
                         }
@@ -227,6 +231,7 @@ namespace Minesweeper
                     case DisplayState.Hidden:
                         if (_numFlagged < _bombLocations.Count)
                         {
+                            _numHidden--;
                             _numFlagged++;
                             _board[x][y].State = DisplayState.Flagged;
                         }
@@ -267,6 +272,7 @@ namespace Minesweeper
             {
                 if (!_board[x][y].HasBomb && _board[x][y].State == DisplayState.Hidden)
                 {
+                    _numHidden--;
                     _board[x][y].State = DisplayState.Shown;
                     if (_board[x][y].Count == 0)
                     {
@@ -288,13 +294,7 @@ namespace Minesweeper
             {
                 if (_hasLost)
                     return false;
-                for (int i = 0; i < _sizeOfBoard; i++)
-                    for (int j = 0; j < _sizeOfBoard; j++)
-                    {
-                        if (_board[i][j].State == DisplayState.Hidden)
-                            return false;
-                    }
-                return true;
+                return (_numHidden == 0);
             }
         }
     }
