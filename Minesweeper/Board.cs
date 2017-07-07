@@ -50,6 +50,11 @@ namespace Minesweeper
 
         public Board(int SizeOfBoard, int NumBombsToHide)
         {
+            if (SizeOfBoard < 1 || SizeOfBoard > 99)
+                throw new ArgumentOutOfRangeException("SizeOfBoard", "Must be between 1 and 99");
+            if (NumBombsToHide < 1 || NumBombsToHide > Math.Min(Int32.MaxValue, SizeOfBoard * SizeOfBoard))
+                throw new ArgumentOutOfRangeException("NumBombsToHide", $"Number of bombs must be between 1 and {Math.Min(Int32.MaxValue, SizeOfBoard * SizeOfBoard)}");
+
             _cellsToClear = new Queue<Tuple<int, int>>();
             _bombLocations = new List<Tuple<int, int>>(NumBombsToHide);
             _sizeOfBoard = SizeOfBoard;
