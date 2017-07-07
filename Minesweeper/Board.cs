@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Minesweeper
@@ -174,21 +175,16 @@ namespace Minesweeper
             Console.WriteLine($"Bombs Remaining: {_bombLocations.Count - _numFlagged}");
             Console.ForegroundColor = ConsoleColor.White;
             StringBuilder sbFormat = new StringBuilder("  ");
-            List<string> sbLine = new List<string>(_sizeOfBoard);
+            string[] sbLine = new string[_sizeOfBoard];
             for (int x = 0; x < _sizeOfBoard; x++)
             {
                 sbFormat.Append("{" + x + ",2}");
-                sbLine.Add((x + 1).ToString());
+                sbLine[x]= (x + 1).ToString();
             }
-            Console.WriteLine(string.Format(sbFormat.ToString(), sbLine.ToArray()));
+            Console.WriteLine(string.Format(sbFormat.ToString(), sbLine));
             for (int i = 0; i < _sizeOfBoard; i++)
             {
-                Console.Write("  ");
-                for (int x = 0; x < _sizeOfBoard; x++)
-                {
-                    Console.Write("--");
-                }
-                Console.WriteLine("-");
+                Console.WriteLine("  "+ string.Concat(Enumerable.Repeat("--", _sizeOfBoard)) +"-");
                 Console.Write(String.Format("{0,2}", i + 1));
                 for (int j = 0; j < _sizeOfBoard; j++)
                 {
@@ -204,12 +200,7 @@ namespace Minesweeper
                 }
                 Console.WriteLine("|");
             }
-            Console.Write("  ");
-            for (int x = 0; x < _sizeOfBoard; x++)
-            {
-                Console.Write("--");
-            }
-            Console.WriteLine("-");
+            Console.WriteLine("  " + string.Concat(Enumerable.Repeat("--", _sizeOfBoard)) + "-");
             Console.ForegroundColor = origColor;
         }
         private void Flag(int x, int y)
