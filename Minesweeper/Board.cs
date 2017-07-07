@@ -144,25 +144,27 @@ namespace Minesweeper
         }
         private void DrawBoard()
         {
-            Console.Clear();
+               Console.Clear();
             var origColor = Console.ForegroundColor;
             Console.WriteLine($"Bombs Remaining: {_bombLocations.Count - _flagged}");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write(" ");
+            StringBuilder sbFormat = new StringBuilder("  ");
+            List<string> sbLine = new List<string>(_sizeOfBoard);
             for (int x = 0; x < _sizeOfBoard; x++)
             {
-                Console.Write($" {x + 1}");
+                sbFormat.Append("{" + x + ",2}");
+                sbLine.Add((x + 1).ToString());
             }
-            Console.WriteLine();
+            Console.WriteLine(string.Format(sbFormat.ToString(), sbLine.ToArray()));
             for (int i = 0; i < _sizeOfBoard; i++)
             {
-                Console.Write(" ");
+                Console.Write("  ");
                 for (int x = 0; x < _sizeOfBoard; x++)
                 {
                     Console.Write("--");
                 }
                 Console.WriteLine("-");
-                Console.Write(i + 1);
+                Console.Write(String.Format("{0,2}", i + 1));
                 for (int j = 0; j < _sizeOfBoard; j++)
                 {
                     Console.Write("|");
@@ -177,7 +179,7 @@ namespace Minesweeper
                 }
                 Console.WriteLine("|");
             }
-            Console.Write(" ");
+            Console.Write("  ");
             for (int x = 0; x < _sizeOfBoard; x++)
             {
                 Console.Write("--");
