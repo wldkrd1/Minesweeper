@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Minesweeper
 {
@@ -9,24 +10,26 @@ namespace Minesweeper
         List<Tuple<int, int>> _bombLocations;
         Cell[][] _board;
         int _sizeOfBoard;
-        int _flagged;
-        Queue<Tuple<int, int>> _toCheck;
+        int _numFlagged;
+        Queue<Tuple<int, int>> _cellsToClear;
+        Random _random;
+
         public static Board CreateBoard()
         {
             var n = GetN();
-            long numBombs = GetNumBombs(n);
+            var numBombs = GetNumBombs(n);
             return new Board(n, numBombs);
         }
 
-        private static long GetNumBombs(int n)
+        private static int GetNumBombs(int n)
         {
-            Int64 numBombs = 0;
-            while (numBombs < 1 || numBombs > n * n)
+            int numBombs = 0;
+            while (numBombs < 1 || numBombs > Math.Min(Int32.MaxValue,n * n))
             {
                 Console.Write("How many bombs to hide? ");
                 var input = Console.ReadLine();
-                if (!Int64.TryParse(input, out numBombs) || numBombs < 1 || numBombs > n * n)
-                    Console.WriteLine($"Number of bombs must be between 1 and {n * n}!");
+                if (!Int32.TryParse(input, out numBombs) || numBombs < 1 || numBombs > Math.Min(Int32.MaxValue, n * n))
+                    Console.WriteLine($"Number of bombs must be between 1 and {Math.Min(Int32.MaxValue, n * n)}!");
             }
             return numBombs;
         }
@@ -34,36 +37,34 @@ namespace Minesweeper
         private static int GetN()
         {
             int n = 0;
-            while (n < 1 || n > 1000)
+            Console.Clear();
+            while (n < 1 || n > 99)
             {
-                Console.Clear();
                 Console.Write("Creating an N by N board. Please enter N: ");
                 var input = Console.ReadLine();
-                if (!Int32.TryParse(input, out n) || n < 1 || n > 1000)
-                    Console.WriteLine("N must be between 1 and 1000!");
+                if (!Int32.TryParse(input, out n) || n < 1 || n > 99)
+                    Console.WriteLine("N must be between 1 and 99!");
             }
             return n;
         }
-        
-        public Board(int SizeOfBoard, Int64 NumBombsToHide)
+
+        public Board(int SizeOfBoard, int NumBombsToHide)
         {
-            _toCheck = new Queue<Tuple<int, int>>();
-            _bombLocations = new List<Tuple<int, int>>(NumBombsToHide > int.MaxValue ? int.MaxValue : ((int)NumBombsToHide));
+            _cellsToClear = new Queue<Tuple<int, int>>();
+            _bombLocations = new List<Tuple<int, int>>(NumBombsToHide);
             _sizeOfBoard = SizeOfBoard;
             _board = new Cell[SizeOfBoard][];
-            for (int i = 0; i < SizeOfBoard; i++)
-            {
-                _board[i] = new Cell[SizeOfBoard];
-                for (int j = 0; j < SizeOfBoard; j++)
-                {
-                    _board[i][j] = new Cell();
-                }
-            }
-            Random random = new Random();
+            _random = new Random();
+            InitializeBoard(SizeOfBoard);
+            HideBombs(NumBombsToHide);
+        }
+
+        private void HideBombs(int NumBombsToHide)
+        {
             while (NumBombsToHide > 0)
             {
-                int randomx = random.Next(0, SizeOfBoard);
-                int randomy = random.Next(0, SizeOfBoard);
+                int randomx = _random.Next(0, _sizeOfBoard);
+                int randomy = _random.Next(0, _sizeOfBoard);
                 if (!_board[randomx][randomy].HasBomb)
                 {
                     AddBomb(randomx, randomy);
@@ -72,38 +73,29 @@ namespace Minesweeper
                 }
             }
         }
-        
+
+        private void InitializeBoard(int SizeOfBoard)
+        {
+            for (int i = 0; i < SizeOfBoard; i++)
+            {
+                _board[i] = new Cell[SizeOfBoard];
+                for (int j = 0; j < SizeOfBoard; j++)
+                {
+                    _board[i][j] = new Cell();
+                }
+            }
+        }
+
         public void Play()
         {
             DrawBoard();
             while (!(_hasWon | _hasLost))
             {
-                string choice = " ";
-                while (!"SFQ".Contains(choice))
-                {
-                    Console.Write("(S)how, (F)lag or (Q)uit? ");
-                    var input = Console.ReadKey();
-                    Console.WriteLine();
-                    choice = input.KeyChar.ToString().ToUpperInvariant();
-                }
+                var choice = GetChoice();
                 if (choice == "Q")
-                    break;
-                int x = 0;
-                int y = 0;
-                while (y < 1 || y > _sizeOfBoard)
-                {
-                    Console.Write("Please enter x coordinate: ");
-                    var yInput = Console.ReadLine();
-                    if (!Int32.TryParse(yInput, out y) || y < 1 || y > _sizeOfBoard) //yes, I know these are reversed
-                        Console.WriteLine($"X must be between 1 and {_sizeOfBoard}!");
-                }
-                while (x < 1 || x > _sizeOfBoard)
-                {
-                    Console.Write("Please enter y coordinate: ");
-                    var xInput = Console.ReadLine();
-                    if (!Int32.TryParse(xInput, out x) || x < 1 || x > _sizeOfBoard)   //yes, I know these are reversed
-                        Console.WriteLine($"Y must be between 1 and {_sizeOfBoard}!");
-                }
+                    return;
+                var y = GetCoordinate("x");
+                var x = GetCoordinate("y");
                 switch (choice)
                 {
                     case "S":
@@ -126,7 +118,30 @@ namespace Minesweeper
                 }
             }
         }
-        
+        private static string GetChoice()
+        {
+            string choice = " ";
+            while (!"SFQ".Contains(choice))
+            {
+                Console.Write("(S)how, (F)lag or (Q)uit? ");
+                var input = Console.ReadKey();
+                Console.WriteLine();
+                choice = input.KeyChar.ToString().ToUpperInvariant();
+            }
+            return choice;
+        }
+        private int GetCoordinate(string axis)
+        {
+            int y = 0;
+            while (y < 1 || y > _sizeOfBoard)
+            {
+                Console.Write($"Please enter {axis} coordinate: ");
+                var yInput = Console.ReadLine();
+                if (!Int32.TryParse(yInput, out y) || y < 1 || y > _sizeOfBoard)
+                    Console.WriteLine($"{axis} must be between 1 and {_sizeOfBoard}!");
+            }
+            return y;
+        }
         private void AddBomb(int x, int y)
         {
             _board[x][y].HasBomb = true;
@@ -139,18 +154,16 @@ namespace Minesweeper
             UpdateCount(x, y + 1);
             UpdateCount(x + 1, y + 1);
         }
-        
         private void UpdateCount(int x, int y)
         {
             if (x >= 0 && x < _sizeOfBoard && y >= 0 && y < _sizeOfBoard)
                 _board[x][y].Count++;
         }
-        
         private void DrawBoard()
         {
-               Console.Clear();
+            Console.Clear();
             var origColor = Console.ForegroundColor;
-            Console.WriteLine($"Bombs Remaining: {_bombLocations.Count - _flagged}");
+            Console.WriteLine($"Bombs Remaining: {_bombLocations.Count - _numFlagged}");
             Console.ForegroundColor = ConsoleColor.White;
             StringBuilder sbFormat = new StringBuilder("  ");
             List<string> sbLine = new List<string>(_sizeOfBoard);
@@ -191,7 +204,6 @@ namespace Minesweeper
             Console.WriteLine("-");
             Console.ForegroundColor = origColor;
         }
-        
         private void Flag(int x, int y)
         {
             x--;
@@ -201,24 +213,23 @@ namespace Minesweeper
                 switch (_board[x][y].State)
                 {
                     case DisplayState.Flagged:
-                        if (_flagged > 0)
+                        if (_numFlagged > 0)
                         {
-                            _flagged--;
+                            _numFlagged--;
                             _board[x][y].State = DisplayState.Hidden;
                         }
-                        break;
+                            break;
                     case DisplayState.Hidden:
-                        if (_flagged < _bombLocations.Count)
+                        if (_numFlagged < _bombLocations.Count)
                         {
-                            _flagged++;
+                            _numFlagged++;
                             _board[x][y].State = DisplayState.Flagged;
                         }
-                        break;
-                    case DisplayState.Shown: break;
+                            break;
+                    case DisplayState.Shown:break;
                 }
             }
         }
-        
         private void Show(int x, int y)
         {
             x--;
@@ -236,16 +247,15 @@ namespace Minesweeper
                 }
                 else
                 {
-                    _toCheck.Enqueue(new Tuple<int, int>(x, y));
-                    while (_toCheck.Count > 0)
+                    _cellsToClear.Enqueue(new Tuple<int, int>(x, y));
+                    while (_cellsToClear.Count > 0)
                     {
-                        var next = _toCheck.Dequeue();
+                        var next = _cellsToClear.Dequeue();
                         ShowEmptyCells(next.Item1, next.Item2);
                     }
                 }
             }
         }
-        
         private void ShowEmptyCells(int x, int y)
         {
             if (x >= 0 && x < _sizeOfBoard && y >= 0 && y < _sizeOfBoard)
@@ -255,20 +265,19 @@ namespace Minesweeper
                     _board[x][y].State = DisplayState.Shown;
                     if (_board[x][y].Count == 0)
                     {
-                        _toCheck.Enqueue(new Tuple<int, int>(x - 1, y - 1));
-                        _toCheck.Enqueue(new Tuple<int, int>(x - 1, y - 1));
-                        _toCheck.Enqueue(new Tuple<int, int>(x, y - 1));
-                        _toCheck.Enqueue(new Tuple<int, int>(x + 1, y - 1));
-                        _toCheck.Enqueue(new Tuple<int, int>(x - 1, y));
-                        _toCheck.Enqueue(new Tuple<int, int>(x + 1, y));
-                        _toCheck.Enqueue(new Tuple<int, int>(x - 1, y + 1));
-                        _toCheck.Enqueue(new Tuple<int, int>(x, y + 1));
-                        _toCheck.Enqueue(new Tuple<int, int>(x + 1, y + 1));
+                        _cellsToClear.Enqueue(new Tuple<int, int>(x - 1, y - 1));
+                        _cellsToClear.Enqueue(new Tuple<int, int>(x - 1, y - 1));
+                        _cellsToClear.Enqueue(new Tuple<int, int>(x, y - 1));
+                        _cellsToClear.Enqueue(new Tuple<int, int>(x + 1, y - 1));
+                        _cellsToClear.Enqueue(new Tuple<int, int>(x - 1, y));
+                        _cellsToClear.Enqueue(new Tuple<int, int>(x + 1, y));
+                        _cellsToClear.Enqueue(new Tuple<int, int>(x - 1, y + 1));
+                        _cellsToClear.Enqueue(new Tuple<int, int>(x, y + 1));
+                        _cellsToClear.Enqueue(new Tuple<int, int>(x + 1, y + 1));
                     }
                 }
             }
         }
-        
         private bool _hasWon
         {
             get
