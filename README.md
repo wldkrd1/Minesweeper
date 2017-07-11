@@ -4,7 +4,7 @@ A text-based implementation of Minesweeper for dotnetcore 1.1
 This sounded like a fun little challenge, so I put this together in my spare time over a couple days. 
 
 You specify the size of the N by N 
-board, the number of bombs you would like it to hide, then the game begins. You may either (S)how the contents of a cell, (F)lag a cell 
+board, the number of bombs you would like it to hide, then the game begins. You may (S)how the contents of a cell, (F)lag a cell 
 as suspected of containing a bomb, or (Q)uit. If you Show or Flag, you will need to enter the X coordinate (column #) followed by the 
 Y coordinate (row #).
 
